@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        BODY {
+            width: 520px;
+            min-height: 700px;
+        }
+    </style>
+    <script src="vendor/jquery.min.js"></script>
+    <script src="vendor/underscore.js"></script>
+    <script src="vendor/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="vendor/bootstrap-theme.min.css">
+    <script src="popup.js"></script>
+
+</head>
+<body>
+<form>
+    <div class="input-group">
+        <span class="input-group-addon" id="sizing-addon1">검색어</span> <input type="text" class="form-control" id="s_str" placeholder="검색어를 입력후 엔터키를 누르세요." aria-describedby="sizing-addon1">
+    </div>
+    <br>
+
+    <ul class="list-group" id="f_naver"></ul>
+
+    <div id="f_naver_temp" hidden></div>
+
+
+    <div class="modal fade" id="m_contens" tabindex="-1" role="dialog" aria-labelledby="m_contensTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="m_title">Modal title</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="embed-responsive embed-responsive-4by3" style="overflow:scroll" id="f_contens">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="close_popup" type="button" class="btn btn-secondary">닫기</button>
+                    <button id="go_naver" type="button" class="btn btn-primary">네이버에서 보기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+
+</body>
+</html>
