@@ -17,22 +17,38 @@
 </head>
 <body>
 <form>
-    <div class="input-group">
-        <span class="input-group-addon" id="sizing-addon1">검색어</span> <input type="text" class="form-control" id="s_str" placeholder="검색어를 입력후 엔터키를 누르세요." aria-describedby="sizing-addon1">
+    <!-- 검색 어 -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="input-group">
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span id="btn_searchBy" searchBy="0"></span><span class="caret"></span></button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a name="searchBy" searchBy="0" text="내용 검색 ">내용 검색</a></li>
+                        <li><a name="searchBy" searchBy="1" text="제목 검색 ">제목 검색</a></li>
+                    </ul>
+                </div>
+                <input type="text" class="form-control" id="s_str" placeholder="검색어를 입력후 엔터키를 누르세요." aria-describedby="sizing-addon1">
+            </div>
+        </div>
     </div>
-    <br>
 
+    <!-- 내용 검색 리스트 -->
+    <ul class="list-group" id="f_naver_contens"></ul>
+
+    <!-- 제목 검색 리스트 -->
     <ul class="list-group" id="f_naver"></ul>
 
+    <!-- 파싱을 위해 사용됨 -->
     <div id="f_naver_temp" hidden></div>
 
-
+    <!-- 팝업창 -->
     <div class="modal fade" id="m_contens" tabindex="-1" role="dialog" aria-labelledby="m_contensTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h4 class="modal-title" id="m_title">Modal title</h4>
+                    <h4 class="modal-title" id="m_title">로딩중....</h4>
                 </div>
 
                 <div class="modal-body">
