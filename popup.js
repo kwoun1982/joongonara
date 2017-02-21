@@ -4,6 +4,8 @@ var str = {
     'searchBy': "0",
     'text': "내용검색"
 };
+var pages = 1;
+
 $(document).ready(function () {
     chrome.storage.sync.get(str, function (obj) {
         if (obj.s_str != undefined && obj.s_str != "") {
@@ -13,7 +15,8 @@ $(document).ready(function () {
             console.log("text :: " + obj.text);
             $("#btn_searchBy").attr("searchBy", obj.searchBy);
             $("#btn_searchBy").html(obj.text);
-            search();
+            pages = 1;
+            search(pages);
         }
     });
     $("#close_popup").on("click", function () {
@@ -33,7 +36,8 @@ $(document).ready(function () {
         $("#btn_searchBy").html(str.text);
         $("#btn_searchBy").attr("searchBy", str.searchBy);
 
-        search();
+        pages = 1;
+        search(pages);
 
     });
     $("#go_naver").on("click", function () {
@@ -41,33 +45,60 @@ $(document).ready(function () {
     });
     $("#s_str").keydown(function (key) {
         if (key.keyCode == 13) {
-            search();
+            pages = 1;
+            search(pages);
         }
     });
-});
 
+    $(window).bind('mousewheel', function (event) {
+        if (event.originalEvent.wheelDelta >= 0) {
+            // console.log('Scroll up');
+        } else {
+            if (temp_height == $(document).scrollTop()) {
+                if (isSerching) {
+                } else {
+                    isSerching = true;
+                    setTimeout(function () {
+                        pages = pages + 1;
+                        search(pages);
+                    }, 500);
+                }
+            } else {
+                temp_height = $(document).scrollTop();
+            }
+        }
+    });
+
+});
+var temp_height = 0;
+var isSerching = false;
 function close_popup() {
     $("#m_contens").modal("hide");
     $("#f_contens").empty();
 }
 
-function search() {
+function search(page) {
+    // 페이지 위치 초기화
+    temp_height = 0;
+
     // 검색 URL 셋팅
+    $("#s_str").val($("#s_str").val().trim());
+
     var param = {};
+    param["search.query"] = $("#s_str").val().trim();
     param["search.menuid"] = "";
     param["search.searchBy"] = $("#btn_searchBy").attr("searchBy");
     param["search.sortBy"] = "date";
     param["search.clubid"] = 10050146;
-    param["search.option"] = 2;
-    param["search.defaultValue"] = 1;
-    param["search.query"] = $("#s_str").val();
+    param["search.option"] = 0;
+    param["search.defaultValue"] = "";
+    param["search.page"] = page;
 
     console.log(JSON.stringify(param, "", "    "));
 
     // 검색어 작성
-    var src = "http://m.cafe.naver.com/ArticleSearchList.nhn?" + decodeURI($.param(param));
-
-    console.log("\n" + src + "\n");
+    var src = "http://m.cafe.naver.com/ArticleSearchListAjax.nhn?" + decodeURI($.param(param));
+    console.log(src);
 
     // 검색어 저장
     str = {
@@ -76,71 +107,80 @@ function search() {
         'text': $("#btn_searchBy").html()
     };
     chrome.storage.sync.set(str, function () {
-        // 조회
-        $.ajax({
-            url: src
-        }).done(function (data) {
-            if (console && console.log) {
-                data = data.substr(data.indexOf("articleList"), data.indexOf("moreButtonArea") - data.indexOf("search_list"));
-                data = data.replaceAll('\n', '');
-                data = data.replaceAll('\t', '');
+        // // 조회
+        // $.ajax({
+        //     url: src
+        // }).done(function (data) {
+        //     search_callback(param, data)
+        // }).always(function () {
+        //
+        // });
 
-                // console.log(data);
-                $("#f_naver_temp").html(data);
-                var html_title = "";
+        util_ajax(src
+            , function (data) {
+                search_callback(param, data)
 
-                // 내용 검색시
-                if (param["search.searchBy"] == 0) {
-
-                    $(".lst_section > li").each(function (index) {
-                        var href = $(this).find("a").attr("href");
-                        var saleYN = $(this).find(".icon_txt").text() == "" ? "" : "[" + $(this).find(".icon_txt").text() + "] ";
-                        var title = $(this).find("h3").text();
-                        var time = $(this).find(".time").text();
-                        var img = $(this).find("img").attr("src");
-                        var contens = $(this).find(".post_area").text();
-
-                        html_title += '<li class="list-group-item" src="http://m.cafe.naver.com' + href + '" time="' + time + '" title="' + title + '">';
-                        html_title += '    <div class="media-left">';
-                        html_title += '         <img class="media-object" src="' + img + '" style="width: 64px; height: 64px;">';
-                        html_title += '    </div>';
-                        html_title += '    <div class="media-body">';
-                        html_title += '        <h4 class="media-heading"><span class="badge">' + time + '</span>' + saleYN + title + '</h4>';
-                        html_title += contens;
-                        html_title += '    </div>';
-                        html_title += '</li>';
-
-                    });
-                    $("#f_naver_contens").html(html_title);
-                    if ($("#f_naver_contens").html() == "") {
-                        $("#f_naver_contens").html("<h1>내용검색은 네이버 로그인 후 이용 가능합니다. <br>검색 결과가 없습니다.</h1>")
-                    }
-
-                } else {
-                    // 제목 검색시
-                    $(".list_tit > li").each(function (index) {
-                        var href = $(this).find("a").attr("href");
-                        var title = $(this).find("h3").text();
-                        var time = $(this).find(".time").text();
-                        html_title += '<li class="list-group-item" src="http://m.cafe.naver.com' + href + '" time="' + time + '" title="' + title + '"><span class="badge">' + time + '</span>' + title + '</li>'
-                    });
-                    $("#f_naver").html(html_title);
-                    $("#f_naver_temp").html("");
-                    if ($("#f_naver").html() == "") {
-                        $("#f_naver").html("<h1>검색 결과가 없습니다.</h1>")
-                    }
-                }
-
+            }, function () {
                 $("#s_str").focus();
-
-                // 팝업 열기
-                $(".list-group-item").on("click", function () {
-                    openPop(this)
-                });
+                isSerching = false;
+                $("#f_naver_temp").empty();
             }
-        });
+        )
+
     });
 }
+
+function search_callback(param, data) {
+    data = data.replaceAll('\n', '');
+    data = data.replaceAll('\t', '');
+    data = data.replaceAll('\r', '');
+    // console.log(data);
+    $("#f_naver_temp").html(data);
+    var html_title = "";
+    if (param["search.searchBy"] == 0) {
+        $(".lst_section > li").each(function (index) {
+            var href = $(this).find("a").attr("href");
+            var saleYN = $(this).find(".icon_txt").text() == "" ? "" : "[" + $(this).find(".icon_txt").text() + "] ";
+            var title = $(this).find("h3").text();
+            var time = $(this).find(".time").text();
+            var img = $(this).find("img").attr("src");
+            var contens = $(this).find(".post_area").text();
+            var name = $(this).find(".name").text();
+            html_title += '<li class="list-group-item" src="http://m.cafe.naver.com' + href + '" time="' + time + '" title="' + title + '">';
+            html_title += '    <div class="media-left">';
+            html_title += '         <img class="media-object" src="' + img + '" style="width: 64px; height: 64px;">';
+            html_title += '    </div>';
+            html_title += '    <div class="media-body">';
+            html_title += '        <h4 class="media-heading"><span class="badge">' + time + '</span>' + saleYN + title + '</h4>';
+            html_title += contens;
+            html_title += '    </div>';
+            html_title += '</li>';
+        });
+
+        $("#f_naver_contens").append(html_title);
+        if ($("#f_naver_contens").html() == "") {
+            $("#f_naver_contens").html("<h1>내용검색은 네이버 로그인 후 이용 가능합니다. <br>검색 결과가 없습니다.</h1>")
+        }
+    } else {
+        // 제목 검색시
+        $(".list_tit > li").each(function (index) {
+            var href = $(this).find("a").attr("href");
+            var title = $(this).find("h3").text();
+            var time = $(this).find(".time").text();
+            html_title += '<li class="list-group-item" src="http://m.cafe.naver.com' + href + '" time="' + time + '" title="' + title + '"><span class="badge">' + time + '</span>' + title + '</li>'
+        });
+        $("#f_naver").append(html_title);
+        if ($("#f_naver").html() == "") {
+            $("#f_naver").html("<h1>검색 결과가 없습니다.</h1>");
+        }
+    }
+
+    // 팝업 열기
+    $(".list-group-item").on("click", function () {
+        openPop(this)
+    });
+}
+
 
 // 팝업 :: 네이버에서 보기 버튼
 function go_naver() {
@@ -162,21 +202,13 @@ function openPop(obj) {
     var title = $(obj).attr("title");
 
     $("#go_naver").attr("src", src);
-
-    $.ajax({
-        url: src
-    }).done(function (data) {
-        if (console && console.log) {
-            // htmlParse(data);
-            htmlParse(data, title, time);
-        }
+    util_ajax(src, function (data) {
+        htmlParse(data, title, time);
     });
 }
 
 // 팝업 :: 상세 화면 용 Parse
 function htmlParse(data, title, time) {
-
-
     data = data.substr(data.indexOf("NHN_Writeform_Main") + 19, data.indexOf("end_sns_area") - data.indexOf("NHN_Writeform_Main"));
     $("#f_naver_temp").html(data);
     data = $("#f_naver_temp").html();
@@ -302,3 +334,26 @@ String.prototype.replaceAll = function (token, newToken, ignoreCase) {
     return str;
 };
 
+function util_ajax(src, callback, complete) {
+    $.ajax({
+        url: src,
+        success: function (res) {
+            callback(res);
+        },
+        beforeSend: function () {
+            $("#loading").show();
+        },
+        complete: function () {
+            setTimeout(function () {
+                $("#loading").hide();
+                if (typeof complete == "function") {
+                    complete();
+                }
+            }, 500);
+        },
+        error: function (e) {
+
+        }, timeout: 10000
+    });
+
+}
