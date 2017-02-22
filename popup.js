@@ -51,27 +51,39 @@ $(document).ready(function () {
     });
 
     $(window).bind('mousewheel', function (event) {
-        if (event.originalEvent.wheelDelta >= 0) {
-            // console.log('Scroll up');
+        if (isModalShow) {
+            return;
         } else {
-            if (temp_height == $(document).scrollTop()) {
-                if (isSerching) {
-                } else {
-                    isSerching = true;
-                    setTimeout(function () {
-                        pages = pages + 1;
-                        search(pages);
-                    }, 500);
-                }
+            if (event.originalEvent.wheelDelta >= 0) {
+                // console.log('Scroll up');
             } else {
-                temp_height = $(document).scrollTop();
+                if (temp_height == $(document).scrollTop()) {
+                    if (isSerching) {
+                    } else {
+                        isSerching = true;
+                        setTimeout(function () {
+                            pages = pages + 1;
+                            search(pages);
+                        }, 500);
+                    }
+                } else {
+                    temp_height = $(document).scrollTop();
+                }
             }
         }
+    });
+
+    $("#m_contens").on("show.bs.modal", function () {
+        isModalShow = true;
+    });
+    $("#m_contens").on("hide.bs.modal", function () {
+        isModalShow = false;
     });
 
 });
 var temp_height = 0;
 var isSerching = false;
+var isModalShow = false;
 function close_popup() {
     $("#m_contens").modal("hide");
     $("#f_contens").empty();
@@ -107,15 +119,6 @@ function search(page) {
         'text': $("#btn_searchBy").html()
     };
     chrome.storage.sync.set(str, function () {
-        // // 조회
-        // $.ajax({
-        //     url: src
-        // }).done(function (data) {
-        //     search_callback(param, data)
-        // }).always(function () {
-        //
-        // });
-
         util_ajax(src
             , function (data) {
                 search_callback(param, data)
@@ -126,7 +129,6 @@ function search(page) {
                 $("#f_naver_temp").empty();
             }
         )
-
     });
 }
 
@@ -181,7 +183,6 @@ function search_callback(param, data) {
     });
 }
 
-
 // 팝업 :: 네이버에서 보기 버튼
 function go_naver() {
     chrome.tabs.create(
@@ -209,7 +210,7 @@ function openPop(obj) {
 
 // 팝업 :: 상세 화면 용 Parse
 function htmlParse(data, title, time) {
-    data = data.substr(data.indexOf("NHN_Writeform_Main") + 19, data.indexOf("end_sns_area") - data.indexOf("NHN_Writeform_Main"));
+    // data = data.substr(data.indexOf("NHN_Writeform_Main") + 19, data.indexOf("end_sns_area") - data.indexOf("NHN_Writeform_Main"));
     $("#f_naver_temp").html(data);
     data = $("#f_naver_temp").html();
     data = data.replaceAll('\n', '');
@@ -223,16 +224,23 @@ function htmlParse(data, title, time) {
     // 제목 설정
     $("#m_title").html("(" + time + ") " + title);
     title = $("#f_naver_temp").find("title").html();
+    var price = $("#f_naver_temp").find(".price").html();
+    if ($("#f_naver_temp").find(".price").html() == undefined) {
+        price = "";
+    } else {
+        price = "<span class=\'text-primary\'>" + price + " </span>";
+    }
     if (title !== undefined) {
         title = title.replaceAll(": 네이버 카페", "");
-        $("#m_title").html("(" + time + ") " + title);
+        $("#m_title").html("(" + time + ") " + price + title);
     }
 
-    // console.log("[" + $("#f_naver_temp").html().trim() + "]");
+    console.log("[" + $("#f_naver_temp").html().trim() + "]");
 
     // 작성자가 모바일,PC 에서 작성했는지 구분값
     if ($("#postContent").length == 0) {
         pc();
+
     } else {
         mobile();
     }
