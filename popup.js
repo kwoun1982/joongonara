@@ -142,7 +142,14 @@ function search_callback(param, data) {
     if (param["search.searchBy"] == 0) {
         $(".lst_section > li").each(function (index) {
             var href = $(this).find("a").attr("href");
-            var saleYN = $(this).find(".icon_txt").text() == "" ? "" : "[" + $(this).find(".icon_txt").text() + "] ";
+            var temp_seleYN = $(this).find(".icon_txt").text();
+            var saleYN = temp_seleYN == "" ? "" : "[" + temp_seleYN + "] ";
+            var saleYN_class = "";
+            if (temp_seleYN.indexOf("완료") > -1) {
+                saleYN_class = "text-danger";
+            } else {
+                saleYN_class = "text-success";
+            }
             var title = $(this).find("h3").text();
             var time = $(this).find(".time").text();
             var img = $(this).find("img").attr("src");
@@ -153,7 +160,7 @@ function search_callback(param, data) {
             html_title += '         <img class="media-object" src="' + img + '" style="width: 64px; height: 64px;">';
             html_title += '    </div>';
             html_title += '    <div class="media-body">';
-            html_title += '        <h4 class="media-heading"><span class="badge">' + time + '</span>' + saleYN + title + '</h4>';
+            html_title += '        <h4 class="media-heading ' + saleYN_class + '"><span class="badge">' + time + '</span>' + saleYN + title + '</h4>';
             html_title += contens;
             html_title += '    </div>';
             html_title += '</li>';
@@ -224,12 +231,15 @@ function htmlParse(data, title, time) {
     // 제목 설정
     $("#m_title").html("(" + time + ") " + title);
     title = $("#f_naver_temp").find("title").html();
+
+    // 가격설정
     var price = $("#f_naver_temp").find(".price").html();
     if ($("#f_naver_temp").find(".price").html() == undefined) {
         price = "";
     } else {
         price = "<span class=\'text-primary\'>" + price + " </span>";
     }
+
     if (title !== undefined) {
         title = title.replaceAll(": 네이버 카페", "");
         $("#m_title").html("(" + time + ") " + price + title);
