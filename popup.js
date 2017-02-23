@@ -248,9 +248,12 @@ function htmlParse(data, title, time) {
     console.log("[" + $("#f_naver_temp").html().trim() + "]");
 
     // 작성자가 모바일,PC 에서 작성했는지 구분값
+    $("#f_naver_temp").find("img").each(function (index) {
+        $(this).attr("style", "max-width: 400px; height: auto;");
+    });
+
     if ($("#postContent").length == 0) {
         pc();
-
     } else {
         mobile();
     }
@@ -263,8 +266,7 @@ function htmlParse(data, title, time) {
         var str = "<h1> 알림 </h1><br>";
         str += "<h4> 상세 내용을 표시할수 없습니다</h4>";
         str += "<h4> 1. 네이버에 로그인을 하셔야 상세 내역을 볼수 있습니다. </h4>";
-        str += "<h4>    네이버에서 보기를 선택 하신 후 로그인 후 다시 이용하세요. </h4><br>";
-        str += "<h4> 2.  네이버에서 보기를 선택 하신 후 로그인 후 다시 이용하세요. </h4><br>";
+        str += "<h4> 2. 네이버에서 보기를 선택 하신 후 로그인 후 다시 이용하세요. </h4><br>";
         $("#f_contens").html(str);
     }
 
@@ -281,9 +283,6 @@ function mobile() {
 function pc() {
     $("#f_naver_temp > p").find("img").each(function (index) {
         $(this).remove();
-    });
-    $("#f_naver_temp").find("img").each(function (index) {
-        $(this).attr("style", "max-width: 85%; height: auto;");
     });
     // // 필요없는 정보 삭제
     // ,#sideMenuLayer,#sideMenuContainer, #dimmedLayer,.post_title, #RegisterNewArticleLayer, #SellerInfoLayer, #SoldOutLayer, #fontZoomTooltip,.NHN_Writeform_Main
