@@ -11,8 +11,8 @@ $(document).ready(function () {
         if (obj.s_str != undefined && obj.s_str != "") {
             $("#s_str").val(obj.s_str);
 
-            console.log("searchBy :: " + obj.searchBy);
-            console.log("text :: " + obj.text);
+            // console.log("searchBy :: " + obj.searchBy);
+            // console.log("text :: " + obj.text);
             $("#btn_searchBy").attr("searchBy", obj.searchBy);
             $("#btn_searchBy").html(obj.text);
             pages = 1;
@@ -43,6 +43,8 @@ $(document).ready(function () {
     $("#go_naver").on("click", function () {
         go_naver();
     });
+
+    // 엔터키로 물품 검색
     $("#s_str").keydown(function (key) {
         if (key.keyCode == 13) {
             pages = 1;
@@ -75,9 +77,19 @@ $(document).ready(function () {
 
     $("#m_contens").on("show.bs.modal", function () {
         isModalShow = true;
+        // 팝업이 열린경우
+        // 리스트 스크롤 잠금
+        $('#f_naver, #f_naver_contens').on('scroll touchmove mousewheel', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
     });
+
     $("#m_contens").on("hide.bs.modal", function () {
         isModalShow = false;
+        // 리스트 스크롤 잠금 풀기
+        $('#f_naver, #f_naver_contens').off('scroll touchmove mousewheel');
     });
 
 });
@@ -245,8 +257,7 @@ function htmlParse(data, title, time) {
         $("#m_title").html("(" + time + ") " + price + title);
     }
 
-    console.log("[" + $("#f_naver_temp").html().trim() + "]");
-
+    // console.log("[" + $("#f_naver_temp").html().trim() + "]");
     // 작성자가 모바일,PC 에서 작성했는지 구분값
     $("#f_naver_temp").find("img").each(function (index) {
         $(this).attr("style", "max-width: 400px; height: auto;");
@@ -254,8 +265,10 @@ function htmlParse(data, title, time) {
 
     if ($("#postContent").length == 0) {
         pc();
+        console.log("피씨 PC");
     } else {
         mobile();
+        console.log("모바일 Mobile");
     }
 
     // Temp 삭제
@@ -277,6 +290,14 @@ function htmlParse(data, title, time) {
 }
 
 function mobile() {
+    $("a[target=_blank]").each(function () {
+        $(this).remove();
+    });
+    $(".NHN_Writeform_Main > p").each(function () {
+        if ($(this).text().trim() == "") {
+            $(this).remove();
+        }
+    });
     $("#f_contens").html($("#f_naver_temp").find("#postContent").html());
 }
 
